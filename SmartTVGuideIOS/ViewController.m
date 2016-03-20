@@ -14,6 +14,26 @@
 
 @implementation ViewController
 
+- (BOOL)canBecomeFirstResponder
+{
+    return YES;
+}
+
+- (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event
+{
+    if (motion == UIEventSubtypeMotionShake)
+    {
+        ++beardIndex;
+        
+        if (beardIndex > 2)
+        {
+            beardIndex = 1;
+        }
+        
+        
+    }
+}
+
 - (void)handlePan:(UIPanGestureRecognizer *)recognizer
 {
     CGPoint translation = [recognizer translationInView:self.view];
@@ -51,12 +71,12 @@
     }
     else if (recognizer.state == UIGestureRecognizerStateBegan)
     {
-        startScale = recognizer.scale;
+        startScale = lastScale;
     }
     else
     {
         
-        lastScale = startScale + recognizer.scale;
+        lastScale = /*startScale +*/ recognizer.scale;
         
     }
     
@@ -129,6 +149,7 @@
 
 - (void)initVariables
 {
+    beardIndex   = 1;
     lastRotation = 0.0f;
     lastScale    = 1.0f;
     lastX        = 300.f;
@@ -146,6 +167,7 @@
     float lastYInPercent = lastY / self.view.frame.size.height * 100.0f;
     
     SIOParameterArray *data = @[ @{
+                                     @"i": [NSNumber numberWithInteger:beardIndex],
                                      @"r": [NSNumber numberWithFloat:lastRotation],
                                      @"z": [NSNumber numberWithFloat:lastScale],
                                      @"x": [NSNumber numberWithFloat:lastX],
@@ -161,10 +183,25 @@
     
     NSLog(@"Initializing");
 
+    [self initVariables];
     [self initGestureRecognizers];
     [self initSocket];
     
     updateTimer = [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(timerTick) userInfo:nil repeats:YES];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    
+    [socketIO emit:@"beard_show"];
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    
+    [socketIO emit:@"beard_hide"];
 }
 
 #pragma mark -

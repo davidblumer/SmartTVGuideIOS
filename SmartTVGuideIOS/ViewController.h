@@ -12,6 +12,7 @@
 @interface ViewController : UIViewController <UIGestureRecognizerDelegate>
 {
     @private
+        int                         beardIndex;
         CGFloat                     currentPanX;
         CGFloat                     currentPanY;
         CGFloat                     startPanX;
